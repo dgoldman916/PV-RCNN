@@ -1,48 +1,5 @@
-    
-"""
-Area of Intersection of Two Rotated Rectangles
-
-https://stackoverflow.com/questions/44797713/calculate-the-area-of-intersection-of-two-rotated-rectangles-in-python/45268241#45268241
-Author: Ruud de Jong
-
-Here is a solution that does not use any libraries outside of Python's standard library.
-
-Determining the area of the intersection of two rectangles can be divided in two subproblems:
-
-Finding the intersection polygon, if any;
-Determine the area of the intersection polygon.
-Both problems are relatively easy when you work with the vertices (corners) of the rectangles.
-So first you have to determine these vertices.
-Assuming the coordinate origin is in the center of the rectangle,
-the vertices are, starting from the lower left in a counter-clockwise direction:
-
-(-w/2, -h/2), (w/2, -h/2), (w/2, h/2), and (-w/2, h/2).
-
-Rotating this over the angle a, and translating them to the proper position of the rectangle's center,
-these become:
-
-(cx + (-w/2)cos(a) - (-h/2)sin(a), cy + (-w/2)sin(a) + (-h/2)cos(a))
-
-, and similar for the other corner points.
-
-A simple way to determine the intersection polygon is the following:
-you start with one rectangle as the candidate intersection polygon.
-Then you apply the process of sequential cutting, in short:
-
-- you take each edges of the second rectangle in turn,
-
-- and remove all parts from the candidate intersection polygon
-  that are on the "outer" half plane defined by the edge (extended in both directions).
-
-Doing this for all edges leaves the candidate intersection polygon 
-with only the parts that are inside the second rectangle or on its boundary.
-
-The area of the resulting polygon (defined by a series of vertices)
-can be calculated from the coordinates of the vertices.
-You sum the cross products of the vertices of each edge (again in counter-clockwise order),
-and divide that by two. See e.g. www.mathopenref.com/coordpolygonarea.html
-"""
 import numpy as np
+
 
 class Vector:
     def __init__(self, x, y):
@@ -102,6 +59,13 @@ def rectangle_vertices(cx, cy, w, h, r):
     )
 
 def get_intersection_area(r1, r2):
+    """
+    Area of Intersection of Two Rotated Rectangles
+
+    https://stackoverflow.com/questions/44797713/calculate-the-area-of-intersection-of-two-rotated-rectangles-in-python/45268241#45268241
+    Author: Ruud de Jong
+    """
+
     # r1 and r2 are in (center, width, height, rotation) representation
     # First convert these into a sequence of vertices
 
