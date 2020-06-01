@@ -42,6 +42,7 @@ can be calculated from the coordinates of the vertices.
 You sum the cross products of the vertices of each edge (again in counter-clockwise order),
 and divide that by two. See e.g. www.mathopenref.com/coordpolygonarea.html
 """
+import numpy as np
 
 class Vector:
     def __init__(self, x, y):
@@ -177,6 +178,8 @@ def get_iou(bb1, bb2):
     
 
 def get_intersection_volume(bb1, bb2):
+    to_rect = lambda bb: (bb[0], bb[1], bb[3], bb[4], bb[6])
+    to_height = lambda bb: (bb[2], bb[5])
     # calculate area of intersection between boxes (2d)
     i_area = get_intersection_area(to_rect(bb1), to_rect(bb2))
     # calculate height of intersection between box heights (1d)
@@ -192,3 +195,56 @@ def get_union_volume(bb1, bb2):
     # union = volume of two boxes - intersection of boxes
     union_volume = get_rectangle_volume(*bb1[3:6]) + get_rectangle_volume(*bb2[3:6]) - get_intersection_volume(bb1, bb2)
     return union_volume
+
+
+def test_single_case_bb_iou(bb1=None, bb2=None, expected_val=None):
+    if expected_val:
+        assert isinstance(expected_val, float)
+    if not bb1:
+        bb1 = [0, 0, 0, 1, 1, 1, np.pi/2]
+    if not bb2:
+        bb2 = [0.5, 0.5, 0.5, 1, 1, 1, 0]
+    iou = get_iou(bb1, bb2)
+    if expected_val:
+        if round(iou, 2) == round(expected_val, 2):
+            return True
+        else:
+            return False
+    return iou
+
+
+
+def test_bb_iou():
+    # label_fpath = "../data/kitti/training/label_2/000037.txt"
+    #image_fpath = '../data/kitti/training/velodyne_reduced/000032.bin'
+    # boxes, batch_idx, class_idx, scores = inference.main(image_fpath)
+    boxes = np.array([
+            [19.5561,  0.5630, -0.5180,  1.5810,  3.5372,  1.4999,  1.6627],
+            [ 0.1940,  7.6636, -0.9024,  1.5800,  3.6634,  1.4650,  1.7097],
+            [31.3177,  3.9726, -0.3252,  1.6397,  4.1524,  1.5230,  1.5910]
+        ])
+    ###########################
+    # dev
+    ###########################
+    # label_header = [
+    #  "type", "truncated", "occluded", "alpha", "bbox1", "bbox2", "bbox3", "bbox4",
+    #  "w", "h", "l", "x", "y", "z", "yaw"
+    #]
+    box_order = ("x", "y", "z", "w", "l", "h", "yaw")
+    # labels = [dict(zip(label_header, label.strip().split(" "))) for label in open(label_fpath).readlines()]
+    ###########################
+    # get max iou between label and proposal
+    gt_proposal_match_with_iou = {}
+    for box_idx in range(boxes.shape[0]):
+        label_proposal_match_with_iou[box_idx] = 0
+        max_iou = 0
+        for label_idx, label in enumerate(labels):
+            # label_bbox = np.array([float(label[key]) for key in box_order])
+            proposal_bbox = boxes[box_idx]
+            iou = get_iou(proposal_bbox, label_bbox)
+            print(iou)
+            if iou > max_iou:
+                max_iou = iou
+                label_proposal_match_with_iou[box_idx] = label_idx
+    #iou = bb_intersection_over_union(proposal_bbox, label_bbox)
+    return label_proposal_match_with_iou
